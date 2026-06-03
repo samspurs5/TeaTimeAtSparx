@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeaTime@Sparx</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInDocument()"></script>
+<style>
+  :root {
+    --navy: #1a1f3a;
+    --purple: #3d2b8e;
+    --purple-light: #5a3fbf;
+    --accent: #7c5cbf;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --gold: #f1c40f;
+    --bg: #f0f2f8;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --muted: #7f8c8d;
+    --border: #e0e4f0;
+    --shadow: 0 2px 16px rgba(61,43,142,0.10);
+    --shadow-hover: 0 6px 32px rgba(61,43,142,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--purple) 100%);
+    color: white;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-chip .icon { font-size: 1rem; }
+
+  /* MAIN CONTENT */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  /* HOME SCREEN */
+  #home-screen { display: block; }
+  #task-screen { display: none; }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+  }
+
+  /* TOPIC CARDS GRID */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .topic-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--accent);
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--topic-color, var(--purple));
+  }
+  .topic-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+    background: var(--topic-bg, #ede9ff);
+  }
+  .topic-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .topic-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: var(--topic-color, var(--purple));
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  .topic-badge {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--topic-color, var(--purple));
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* LEADERBOARD/STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .stats-tile {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .stats-tile .big-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--purple);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stats-tile .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* TASK SCREEN */
+  .task-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .back-btn {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--navy);
+    transition: background 0.1s, border-color 0.1s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .back-btn:hover { background: var(--bg); border-color: var(--accent); }
+  .task-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--navy);
+    flex: 1;
+  }
+  .task-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .task-progress-bar {
+    width: 140px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .task-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--accent));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 36px 40px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    max-width: 760px;
+  }
+  .question-meta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-topic { background: #ede9ff; color: var(--purple); }
+  .badge-easy { background: #d5f5e3; color: #27ae60; }
+  .badge-medium { background: #fef9e7; color: #d68910; }
+  .badge-hard { background: #fde8e8; color: #c0392b; }
+  .question-num {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .question-text {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+  .answer-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .answer-input {
+    padding: 12px 18px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    outline: none;
+    width: 200px;
+    transition: border-color 0.15s;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .answer-input:focus { border-color: var(--accent); background: white; }
+  .answer-input.correct { border-color: var(--green); background: #f0fff4; }
+  .answer-input.incorrect { border-color: var(--red); background: #fff5f5; }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: white;
+    box-shadow: 0 4px 14px rgba(61,43,142,0.3);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 20px rgba(61,43,142,0.4); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-next {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    box-shadow: 0 4px 14px rgba(46,204,113,0.3);
+    display: none;
+  }
+  .btn-next:hover { box-shadow: 0 6px 20px rgba(46,204,113,0.4); }
+
+  /* FEEDBACK */
+  .feedback-box {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .feedback-correct {
+    background: #d5f5e3;
+    color: #1d8348;
+    border: 1.5px solid #82e0aa;
+  }
+  .feedback-incorrect {
+    background: #fde8e8;
+    color: #922b21;
+    border: 1.5px solid #f1948a;
+  }
+  .feedback-icon { font-size: 1.3rem; }
+
+  /* XP ANIMATION */
+  .xp-pop {
+    position: fixed;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--gold);
+    pointer-events: none;
+    z-index: 999;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    animation: xpFloat 1.2s ease-out forwards;
+  }
+  @keyframes xpFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+  }
+
+  /* COMPLETION CARD */
+  .completion-card {
+    background: linear-gradient(135deg, var(--navy), var(--purple));
+    color: white;
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 600px;
+    box-shadow: var(--shadow-hover);
+  }
+  .completion-card .big-trophy { font-size: 4rem; margin-bottom: 16px; }
+  .completion-card h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+  .completion-card p { opacity: 0.85; font-size: 1rem; margin-bottom: 24px; }
+  .completion-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .completion-stat .num {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--gold);
+  }
+  .completion-stat .lbl {
+    font-size: 0.82rem;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header { padding: 0 16px; }
+    .logo { font-size: 1.1rem; }
+    .stat-chip { padding: 5px 10px; font-size: 0.75rem; }
+    main { padding: 20px 12px; }
+    .question-card { padding: 24px 20px; }
+    .topic-grid { grid-template-columns: 1fr; }
+    .answer-row { flex-direction: column; align-items: flex-start; }
+    .answer-input { width: 100%; }
+    .btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">☕</div>
+    TeaTime@Sparx
+  </div>
+  <div class="header-stats">
+    <div class="stat-chip"><span class="icon">⭐</span> <span id="header-xp">0</span> XP</div>
+    <div class="stat-chip"><span class="icon">🔥</span> <span id="header-streak">0</span> streak</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME SCREEN -->
+  <div id="home-screen">
+    <div class="section-title">Team Time at Cambridge</div>
+    <div class="section-subtitle">Olympiad-style maths challenges. Choose a topic to begin your session.</div>
+
+    <div class="stats-row" id="stats-row"></div>
+
+    <div style="font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:16px;">Topics</div>
+    <div class="topic-grid" id="topic-grid"></div>
+  </div>
+
+  <!-- TASK SCREEN -->
+  <div id="task-screen">
+    <div class="task-header">
+      <button class="back-btn" onclick="goHome()">&#8592; Topics</button>
+      <div class="task-title" id="task-title"></div>
+      <div class="task-progress-wrap">
+        <span id="task-progress-text"></span>
+        <div class="task-progress-bar">
+          <div class="task-progress-bar-fill" id="task-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="question-area"></div>
+  </div>
+
+</main>
+
+<script>
+// ============================================================
+// QUESTION BANK
+// ============================================================
+const QUESTIONS = [
+  // NUMBER THEORY
+  {
+    id: 1, topic: "Number Theory",
+    text: "Find the sum of all positive integers less than 100 that are divisible by neither 3 nor 7.",
+    answer: "2703",
+    difficulty: "Medium",
+    hint: "Use inclusion-exclusion: total - div by 3 - div by 7 + div by 21"
+  },
+  {
+    id: 2, topic: "Number Theory",
+    text: "What is the largest prime factor of \\(999{,}999\\)?",
+    answer: "13",
+    difficulty: "Medium",
+  },
+  {
+    id: 3, topic: "Number Theory",
+    text: "How many positive integer divisors does \\(2^4 \\times 3^3 \\times 5^2\\) have?",
+    answer: "60",
+    difficulty: "Easy",
+  },
+  {
+    id: 4, topic: "Number Theory",
+    text: "Find the remainder when \\(7^{2026}\\) is divided by \\(100\\).",
+    answer: "49",
+    difficulty: "Hard",
+  },
+  {
+    id: 5, topic: "Number Theory",
+    text: "The number \\(n\\) has exactly 3 positive divisors. What is the smallest value of \\(n\\) greater than 100?",
+    answer: "121",
+    difficulty: "Easy",
+  },
+
+  // ALGEBRA
+  {
+    id: 6, topic: "Algebra",
+    text: "The first three terms of a geometric sequence are \\(x-1,\\; x+1,\\; x+5\\). Find \\(x\\).",
+    answer: "3",
+    difficulty: "Medium",
+  },
+  {
+    id: 7, topic: "Algebra",
+    text: "If \\(a + b = 10\\) and \\(ab = 20\\), find the value of \\(a^2 + b^2\\).",
+    answer: "60",
+    difficulty: "Easy",
+  },
+  {
+    id: 8, topic: "Algebra",
+    text: "The sum of the first \\(n\\) terms of an arithmetic sequence is \\(S_n = 3n^2 - 2n\\). Find the 10th term.",
+    answer: "55",
+    difficulty: "Medium",
+  },
+  {
+    id: 9, topic: "Algebra",
+    text: "Solve for \\(x\\): \\(\\sqrt{x + \\sqrt{x + \\sqrt{x + \\cdots}}} = 5\\). Give the integer value of \\(x\\).",
+    answer: "20",
+    difficulty: "Hard",
+  },
+  {
+    id: 10, topic: "Algebra",
+    text: "If \\(x^2 + y^2 = 29\\) and \\(xy = 10\\), find \\((x+y)^2\\).",
+    answer: "49",
+    difficulty: "Easy",
+  },
+
+  // GEOMETRY
+  {
+    id: 11, topic: "Geometry",
+    text: "A right-angled triangle has legs of length 5 and 12. What is the radius of its circumscribed circle (circumradius)?",
+    answer: "6.5",
+    difficulty: "Medium",
+  },
+  {
+    id: 12, topic: "Geometry",
+    text: "In triangle \\(ABC\\), angle \\(A = 60°\\), \\(AB = 8\\), \\(AC = 6\\). Find the area of the triangle.",
+    answer: "\\(12\\sqrt{3}\\)",
+    answer: "20.784",
+    difficulty: "Medium",
+  },
+  {
+    id: 13, topic: "Geometry",
+    text: "Three circles of radius 1 are mutually tangent. Find the area of the gap (curvilinear triangle) between them. Give your answer to 3 decimal places.",
+    answer: "0.161",
+    difficulty: "Hard",
+  },
+  {
+    id: 14, topic: "Geometry",
+    text: "A square has vertices at \\((0,0)\\), \\((4,0)\\), \\((4,4)\\), \\((0,4)\\). A line \\(y = x + k\\) divides the square into two equal areas. Find \\(k\\).",
+    answer: "0",
+    difficulty: "Easy",
+  },
+  {
+    id: 15, topic: "Geometry",
+    text: "A regular hexagon has perimeter 24. What is its area? Give your answer to 2 decimal places.",
+    answer: "41.57",
+    difficulty: "Medium",
+  },
+
+  // COMBINATORICS
+  {
+    id: 16, topic: "Combinatorics",
+    text: "How many ways can 8 people be seated around a circular table? (Two seatings are the same if one is a rotation of the other.)",
+    answer: "5040",
+    difficulty: "Easy",
+  },
+  {
+    id: 17, topic: "Combinatorics",
+    text: "How many 4-digit numbers (from 1000 to 9999) have digit sum equal to 10 and use only the digits 1–9 (no zeros)?",
+    answer: "84",
+    difficulty: "Hard",
+  },
+  {
+    id: 18, topic: "Combinatorics",
+    text: "In how many ways can you tile a \\(2 \\times 10\\) grid using \\(1 \\times 2\\) dominoes?",
+    answer: "89",
+    difficulty: "Medium",
+  },
+  {
+    id: 19, topic: "Combinatorics",
+    text: "A committee of 4 is chosen from 5 men and 6 women. How many committees contain at least 2 women?",
+    answer: "285",
+    difficulty: "Medium",
+  },
+
+  // LOGIC / PUZZLES
+  {
+    id: 20, topic: "Logic & Puzzles",
+    text: "Alice, Bob and Carol each think of a number. Alice's number is double Bob's. Carol's number is 3 more than Alice's. The sum of all three numbers is 43. What is Carol's number?",
+    answer: "19",
+    difficulty: "Easy",
+  },
+  {
+    id: 21, topic: "Logic & Puzzles",
+    text: "A frog sits at position 0 on a number line. Each second it jumps either +3 or −1 with equal probability. What is the expected number of steps to first reach position 3? (Classic result — give the integer answer.)",
+    answer: "4",
+    difficulty: "Hard",
+  },
+  {
+    id: 22, topic: "Logic & Puzzles",
+    text: "I have a 3-litre jug and a 5-litre jug. Using only these two jugs and a tap, what is the minimum number of pourings needed to measure exactly 4 litres?",
+    answer: "6",
+    difficulty: "Medium",
+  },
+  {
+    id: 23, topic: "Number Theory",
+    text: "Find the number of integers from 1 to 1000 (inclusive) that are perfect squares or perfect cubes.",
+    answer: "39",
+    difficulty: "Medium",
+  },
+  {
+    id: 24, topic: "Algebra",
+    text: "The polynomial \\(p(x) = x^3 - 6x^2 + 11x - 6\\) has three integer roots. Find the sum of the squares of the roots.",
+    answer: "14",
+    difficulty: "Medium",
+  },
+  {
+    id: 25, topic: "Geometry",
+    text: "Two chords \\(AB\\) and \\(CD\\) of a circle intersect at point \\(P\\) inside the circle. If \\(AP = 4\\), \\(PB = 9\\), and \\(CP = 6\\), find \\(PD\\).",
+    answer: "6",
+    difficulty: "Medium",
+  }
+];
+
+// ============================================================
+// TOPIC METADATA
+// ============================================================
+const TOPIC_META = {
+  "Number Theory":  { icon: "🔢", color: "#3d2b8e", bg: "#ede9ff" },
+  "Algebra":        { icon: "📐", color: "#1a6fad", bg: "#e8f4fd" },
+  "Geometry":       { icon: "📏", color: "#0e8a4a", bg: "#e8f8f1" },
+  "Combinatorics":  { icon: "🎲", color: "#b7500f", bg: "#fef0e7" },
+  "Logic & Puzzles":{ icon: "🧩", color: "#8e3d80", bg: "#fde9fa" },
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  xp: 0,
+  streak: 0,
+  topicProgress: {}, // { topicName: { answered: Set of q ids, correct: Set } }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem("teatime_sparx_state");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.xp = parsed.xp || 0;
+      state.streak = parsed.streak || 0;
+      // Rebuild Sets
+      state.topicProgress = {};
+      for (const [t, v] of Object.entries(parsed.topicProgress || {})) {
+        state.topicProgress[t] = {
+          answered: new Set(v.answered || []),
+          correct: new Set(v.correct || [])
+        };
+      }
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  const ser = {
+    xp: state.xp,
+    streak: state.streak,
+    topicProgress: {}
+  };
+  for (const [t, v] of Object.entries(state.topicProgress)) {
+    ser.topicProgress[t] = {
+      answered: [...v.answered],
+      correct: [...v.correct]
+    };
+  }
+  localStorage.setItem("teatime_sparx_state", JSON.stringify(ser));
+}
+
+function getTopicProgress(topic) {
+  if (!state.topicProgress[topic]) {
+    state.topicProgress[topic] = { answered: new Set(), correct: new Set() };
+  }
+  return state.topicProgress[topic];
+}
+
+// ============================================================
+// CURRENT TASK SESSION
+// ============================================================
+let session = {
+  topic: null,
+  questions: [],
+  index: 0,
+  sessionCorrect: 0,
+  sessionAnswered: 0,
+  done: false
+};
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function updateHeader() {
+  document.getElementById("header-xp").textContent = state.xp;
+  document.getElementById("header-streak").textContent = state.streak;
+}
+
+function renderMathInElement2(el) {
+  if (typeof renderMathInElement !== "undefined") {
+    renderMathInElement(el, {
+      delimiters: [
+        {left: "\\(", right: "\\)", display: false},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "$", right: "$", display: false},
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+function buildHome() {
+  // Stats row
+  const allAnswered = Object.values(state.topicProgress).reduce((s, v) => s + v.answered.size, 0);
+  const allCorrect = Object.values(state.topicProgress).reduce((s, v) => s + v.correct.size, 0);
+  const accuracy = allAnswered > 0 ? Math.round(100 * allCorrect / allAnswered) : 0;
+  const statsRow = document.getElementById("stats-row");
+  statsRow.innerHTML = `
+    <div class="stats-tile"><div class="big-num">${state.xp}</div><div class="label">Total XP</div></div>
+    <div class="stats-tile"><div class="big-num">${state.streak}</div><div class="label">Current Streak</div></div>
+    <div class="stats-tile"><div class="big-num">${allAnswered}</div><div class="label">Questions Answered</div></div>
+    <div class="stats-tile"><div class="big-num">${accuracy}%</div><div class="label">Accuracy</div></div>
+  `;
+
+  // Topic cards
+  const topics = [...new Set(QUESTIONS.map(q => q.topic))];
+  const grid = document.getElementById("topic-grid");
+  grid.innerHTML = "";
+  for (const topic of topics) {
+    const meta = TOPIC_META[topic] || { icon: "📖", color: "#555", bg: "#eee" };
+    const qs = QUESTIONS.filter(q => q.topic === topic);
+    const prog = getTopicProgress(topic);
+    const answered = prog.answered.size;
+    const total = qs.length;
+    const pct = total > 0 ? Math.round(100 * answered / total) : 0;
+    const card = document.createElement("div");
+    card.className = "topic-card";
+    card.style.setProperty("--topic-color", meta.color);
+    card.style.setProperty("--topic-bg", meta.bg);
+    card.innerHTML = `
+      <div class="topic-badge">${qs.filter(q=>q.difficulty==="Hard").length} hard</div>
+      <div class="topic-icon">${meta.icon}</div>
+      <div class="topic-name">${topic}</div>
+      <div class="topic-count">${total} questions · ${answered} completed</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-label"><span>${pct}% complete</span><span>${answered}/${total}</span></div>
+    `;
+    card.addEventListener("click", () => startTask(topic));
+    grid.appendChild(card);
+  }
+}
+
+// ============================================================
+// TASK SESSION
+// ============================================================
+function startTask(topic) {
+  const qs = QUESTIONS.filter(q => q.topic === topic);
+  session.topic = topic;
+  session.questions = shuffleArr([...qs]);
+  session.index = 0;
+  session.sessionCorrect = 0;
+  session.sessionAnswered = 0;
+  session.done = false;
+
+  document.getElementById("home-screen").style.display = "none";
+  document.getElementById("task-screen").style.display = "block";
+
+  const meta = TOPIC_META[topic] || {};
+  document.getElementById("task-title").textContent = `${meta.icon || ""} ${topic}`;
+
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = session.questions[session.index];
+  const total = session.questions.length;
+  const idx = session.index;
+
+  document.getElementById("task-progress-text").textContent = `${idx + 1} / ${total}`;
+  document.getElementById("task-progress-fill").style.width = `${Math.round(100 * idx / total)}%`;
+
+  const diffClass = { Easy: "badge-easy", Medium: "badge-medium", Hard: "badge-hard" }[q.difficulty] || "badge-medium";
+
+  const area = document.getElementById("question-area");
+  area.innerHTML = `
+    <div class="question-card" id="q-card">
+      <div class="question-meta">
+        <span class="badge badge-topic">${q.topic}</span>
+        <span class="badge ${diffClass}">${q.difficulty}</span>
+      </div>
+      <div class="question-num">Question ${idx + 1} of ${total}</div>
+      <div class="question-text" id="q-text">${q.text}</div>
+      <div class="answer-row">
+        <input type="text" id="answer-input" class="answer-input" placeholder="Your answer…" autocomplete="off" />
+        <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">Check</button>
+        <button class="btn btn-next" id="next-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+  `;
+
+  // Render math
+  const textEl = document.getElementById("q-text");
+  renderMathInElement2(textEl);
+
+  // Enter key submits
+  document.getElementById("answer-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      const nextBtn = document.getElementById("next-btn");
+      if (nextBtn.style.display === "inline-flex" || nextBtn.style.display === "flex" || nextBtn.style.display === "block") {
+        nextQuestion();
+      } else {
+        submitAnswer();
+      }
+    }
+  });
+
+  document.getElementById("answer-input").focus();
+}
+
+function normaliseAnswer(s) {
+  return s.trim().toLowerCase().replace(/\s+/g, "").replace(/,/g, "");
+}
+
+function checkAnswer(userRaw, correct) {
+  const user = normaliseAnswer(userRaw);
+  const corr = normaliseAnswer(correct);
+  if (user === corr) return true;
+  // Try numeric comparison with tolerance
+  const uNum = parseFloat(user);
+  const cNum = parseFloat(corr);
+  if (!isNaN(uNum) && !isNaN(cNum)) {
+    return Math.abs(uNum - cNum) < 0.01;
+  }
+  return false;
+}
+
+function submitAnswer() {
+  const q = session.questions[session.index];
+  const inputEl = document.getElementById("answer-input");
+  const submitBtn = document.getElementById("submit-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const feedbackBox = document.getElementById("feedback-box");
+
+  const userAnswer = inputEl.value.trim();
+  if (!userAnswer) { inputEl.focus(); return; }
+
+  const isCorrect = checkAnswer(userAnswer, q.answer);
+
+  // Update state
+  const prog = getTopicProgress(q.topic);
+  prog.answered.add(q.id);
+  session.sessionAnswered++;
+
+  if (isCorrect) {
+    prog.correct.add(q.id);
+    state.xp += 10;
+    state.streak++;
+    session.sessionCorrect++;
+    inputEl.classList.add("correct");
+    feedbackBox.className = "feedback-box feedback-correct";
+    feedbackBox.innerHTML = `<span class="feedback-icon">✅</span> <span>Correct! +10 XP</span>`;
+    feedbackBox.style.display = "flex";
+    showXpPop(inputEl, "+10 XP");
+  } else {
+    state.streak = 0;
+    inputEl.classList.add("incorrect");
+    feedbackBox.className = "feedback-box feedback-incorrect";
+    feedbackBox.innerHTML = `<span class="feedback-icon">❌</span> <span>Not quite. The answer is <strong>${q.answer}</strong>.</span>`;
+    feedbackBox.style.display = "flex";
+  }
+
+  inputEl.disabled = true;
+  submitBtn.style.display = "none";
+  nextBtn.style.display = "inline-flex";
+  nextBtn.focus();
+
+  updateHeader();
+  saveState();
+}
+
+function nextQuestion() {
+  session.index++;
+  if (session.index >= session.questions.length) {
+    showCompletion();
+  } else {
+    showQuestion();
+  }
+}
+
+function showCompletion() {
+  const topic = session.topic;
+  const correct = session.sessionCorrect;
+  const total = session.questions.length;
+  const xpEarned = correct * 10;
+
+  const area = document.getElementById("question-area");
+  area.innerHTML = `
+    <div class="completion-card">
+      <div class="big-trophy">🏆</div>
+      <h2>Topic Complete!</h2>
+      <p>You've finished all ${total} questions in <strong>${topic}</strong>.</p>
+      <div class="completion-stats">
+        <div class="completion-stat"><div class="num">${correct}/${total}</div><div class="lbl">Correct</div></div>
+        <div class="completion-stat"><div class="num">${xpEarned}</div><div class="lbl">XP Earned</div></div>
+        <div class="completion-stat"><div class="num">${Math.round(100*correct/total)}%</div><div class="lbl">Score</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="goHome()" style="margin-right:12px">← Back to Topics</button>
+      <button class="btn btn-next" style="display:inline-flex" onclick="startTask('${topic}')">Retry Topic</button>
+    </div>
+  `;
+
+  document.getElementById("task-progress-text").textContent = `${total} / ${total}`;
+  document.getElementById("task-progress-fill").style.width = "100%";
+}
+
+function goHome() {
+  document.getElementById("task-screen").style.display = "none";
+  document.getElementById("home-screen").style.display = "block";
+  buildHome();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function shuffleArr(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function showXpPop(nearEl, text) {
+  const rect = nearEl.getBoundingClientRect();
+  const pop = document.createElement("div");
+  pop.className = "xp-pop";
+  pop.textContent = text;
+  pop.style.left = (rect.left + 10) + "px";
+  pop.style.top = (rect.top + window.scrollY) + "px";
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1300);
+}
+
+function renderMathInDocument() {
+  // Called by KaTeX auto-render onload
+  // Will render any math already on page; dynamic content is handled per-element
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+updateHeader();
+buildHome();
+</script>
+</body>
+</html>
